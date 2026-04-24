@@ -19,5 +19,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/hello-world-javascript-action@081a6d193d1dcb38460df1e6927486d748730f9d # v1.1
+      #here after @ u can use commit hash which is a better option for safety purpose
+      
         with:
           who-to-greet: "from an action in the GitHub Action marketplace! 👋"
