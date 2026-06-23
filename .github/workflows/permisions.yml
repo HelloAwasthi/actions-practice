@@ -1,0 +1,57 @@
+name: permissions demo
+on: workflow_dispatch
+
+# BEST PRACTICE: Secure the entire workflow by default. 
+# Any job that doesn't explicitly declare permissions will inherit this safe read-only badge.
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  read-only-pr:
+    name: Run with Read-Only Permissions
+    runs-on: ubuntu-24.04
+    # This job explicitly requests read-only for pull-requests
+    # This job explicitly requests read-only for pull-requests
+    permissions:
+      pull-requests: read
+    continue-on-error: true 
+    
+    steps:
+      - uses: actions/checkout@v5
+      
+      - name: List the first 5 open PRs (allowed)
+        run: gh pr list --limit 5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Attempt to add a label (expected to fail)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr edit 1 --add-label "documentation"
+          
+      - name: Confirm the failure
+        if: failure()
+        run: echo "❌  Write operation was blocked as expected – token is read-only."
+
+  read-write-pr:
+    name: Run with Elevated Write Permissions
+    runs-on: ubuntu-24.04
+    # This job overrides the global default to upgrade its badge to write access
+    permissions:
+      pull-requests: write
+      contents: read
+      
+    steps:
+      - uses: actions/checkout@v5
+      
+      - name: Attempt to add a label (expected to succeed)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr edit 1 --add-label "documentation"
+          
+      - name: Confirm the result
+        if: success()
+        run: echo "✅ Write operation succeeded!"
